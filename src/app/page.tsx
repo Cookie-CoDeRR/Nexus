@@ -1,3 +1,4 @@
+// NEXUS OS - Enterprise Release v1.0.0 (Production)
 "use client";
 
 import React, { useState } from "react";
