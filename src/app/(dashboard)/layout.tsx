@@ -2,15 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { GlobalNotebookBg } from "@/components/ui/GlobalNotebookBg";
 import { UniversalCommandBar } from "@/components/dashboard/UniversalCommandBar";
-import {
-  Activity,
-  Sparkles,
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
+import { ExternalLink, ShieldCheck } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -38,17 +34,28 @@ export default function DashboardLayout({
       <header className="sticky top-0 z-30 w-full bg-[#0A0F1C]/80 backdrop-blur-md border-b border-white/5 px-6 lg:px-10 py-3.5 flex items-center justify-between transition-all duration-300">
         {/* Brand & Route Breadcrumb */}
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-0.5 shadow-[0_0_15px_rgba(37,99,235,0.4)] flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
-              <Activity className="h-4 w-4 text-white" strokeWidth={1.5} />
+          <Link href="/" className="flex items-center gap-3 group">
+            {/* NEXUS Logo — icon mark only (square crop) */}
+            <div className="relative h-9 w-9 shrink-0 transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]">
+              <Image
+                src="/nexus-icon-512.png"
+                alt="NEXUS icon"
+                fill
+                sizes="36px"
+                className="object-contain rounded-lg"
+                priority
+              />
             </div>
-            <div>
-              <span className="text-sm font-extrabold tracking-wider text-white">
-                NEXUS
-              </span>
-              <span className="block text-[9px] font-mono text-blue-400 tracking-widest uppercase">
-                Enterprise OS
-              </span>
+            {/* Full wordmark logo */}
+            <div className="relative hidden sm:block h-7 w-[130px]">
+              <Image
+                src="/nexus-logo.png"
+                alt="NEXUS Command OS"
+                fill
+                sizes="130px"
+                className="object-contain object-left"
+                priority
+              />
             </div>
           </Link>
 

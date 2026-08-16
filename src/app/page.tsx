@@ -3,13 +3,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { LiveDataTicker } from "@/components/ui/LiveDataTicker";
 import { HeroDashboardPreview } from "@/components/ui/HeroDashboardPreview";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { MouseSpotlight } from "@/components/landing/MouseSpotlight";
 import { AuthCard } from "@/components/auth/AuthCard";
 import {
-  Activity,
   ArrowRight,
   Sparkles,
   Shield,
@@ -48,14 +48,29 @@ export default function LandingPage() {
       {/* ========================================================================= */}
       <header className="relative z-20 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-0.5 shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center">
-            <Activity className="h-5 w-5 text-white" />
+          <div className="relative h-9 w-9 shrink-0 drop-shadow-[0_0_12px_rgba(99,102,241,0.55)]">
+            <Image
+              src="/nexus-icon-512.png"
+              alt="NEXUS icon"
+              fill
+              sizes="36px"
+              className="object-contain rounded-lg"
+              priority
+            />
           </div>
-          <span className="text-xl font-black tracking-widest bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
+          <div className="relative h-7 w-[130px] hidden sm:block">
+            <Image
+              src="/nexus-logo.png"
+              alt="NEXUS Command OS"
+              fill
+              sizes="130px"
+              className="object-contain object-left"
+              priority
+            />
+          </div>
+          {/* Mobile fallback wordmark */}
+          <span className="sm:hidden text-xl font-black tracking-widest bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
             NEXUS
-          </span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 text-blue-400 font-mono">
-            COMMAND OS
           </span>
         </div>
 
@@ -153,7 +168,7 @@ export default function LandingPage() {
             href="/dashboard"
             className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-7 py-4 text-sm font-bold text-gray-300 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-[0.98] w-full sm:w-auto shadow-lg shadow-black/40"
           >
-            <Activity className="w-4 h-4 text-blue-400" />
+            <BarChart3 className="w-4 h-4 text-blue-400" />
             <span>Launch Live Dashboard</span>
           </Link>
         </motion.div>
