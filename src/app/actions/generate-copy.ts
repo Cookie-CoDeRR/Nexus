@@ -1,7 +1,6 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
-import prisma from "@/lib/prisma";
 
 export interface GenerateCopyInput {
   campaignGoal: string;
@@ -119,29 +118,20 @@ export async function saveCopyIteration(data: {
   response: GenerateCopyResponse;
 }): Promise<{ success: boolean; id: string; message: string }> {
   try {
-    if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("localhost:5432/nexus_db")) {
-      const record = await prisma.archive.create({
-        data: {
-          campaignGoal: data.campaignGoal,
-          targetAudience: data.targetAudience,
-          tone: data.tone,
-          linkedInCopy: data.response.linkedInCopy,
-          instagramScript: data.response.instagramScript,
-          googleSearchHeadline: data.response.googleSearchHeadline,
-        },
-      });
-
-      return {
-        success: true,
-        id: record.id,
-        message: "Successfully saved iteration to database archive.",
-      };
-    }
+    const { saveFirestoreArchive } = await import("@/lib/firestoreService");
+    const docId = await saveFirestoreArchive({
+      campaignGoal: data.campaignGoal,
+      targetAudience: data.targetAudience,
+      tone: data.tone,
+      linkedInCopy: data.response.linkedInCopy,
+      instagramScript: data.response.instagramScript,
+      googleSearchHeadline: data.response.googleSearchHeadline,
+    });
 
     return {
       success: true,
-      id: `ARC-${Date.now().toString().slice(-6)}`,
-      message: "Successfully saved iteration to campaign archive.",
+      id: docId,
+      message: "Successfully saved iteration to Firestore archive.",
     };
   } catch (err: unknown) {
     console.warn("Archive persistence note:", err instanceof Error ? err.message : "Local save");

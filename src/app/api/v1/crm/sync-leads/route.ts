@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +72,7 @@ export async function POST(req: NextRequest) {
           engagementScore: typeof item.engagementScore === "number" ? item.engagementScore : 82,
           campaignId: item.campaignId || null,
           syncStatus: "SYNCED",
+          createdAt: new Date().toISOString(),
         };
       });
 
@@ -88,17 +88,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Batch Ingest into PostgreSQL via Prisma
+    // 4. Batch Ingest into Firestore
     let syncedCount = sanitizedLeads.length;
 
-    if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("localhost:5432/nexus_db")) {
-      try {
-        await prisma.lead.createMany({
-          data: sanitizedLeads,
-        });
-      } catch (dbErr: unknown) {
-        console.warn("Prisma batch ingestion notice:", dbErr instanceof Error ? dbErr.message : "DB write");
-      }
+    try {
+      const { addFirestoreLeadsBatch } = await import("@/lib/firestoreService");
+      await addFirestoreLeadsBatch(sanitizedLeads);
+    } catch (fsErr: unknown) {
+      console.warn("Firestore batch ingestion notice:", fsErr instanceof Error ? fsErr.message : "DB write");
     }
 
     // 5. Success Response

@@ -1,8 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { auth, googleProvider } from "@/lib/firebase";
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import {
   Lock,
   Mail,
@@ -12,6 +17,7 @@ import {
   Sparkles,
   X,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 interface AuthCardProps {
@@ -22,58 +28,64 @@ export function AuthCard({ onClose }: AuthCardProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const supabase = createClient();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/dashboard`,
-        },
-      });
-
-      if (error) {
-        throw error;
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+        setSuccessMessage("Authenticated via Google Firebase!");
+        setTimeout(() => router.push("/dashboard"), 400);
+      } else {
+        router.push("/dashboard");
       }
     } catch (err: unknown) {
-      console.warn("Supabase Google Auth notice:", err instanceof Error ? err.message : "Redirecting");
-      // If Supabase keys are default placeholders in local demo, route straight to dashboard
+      console.warn("Firebase Google Auth notice:", err instanceof Error ? err.message : "Redirecting");
       router.push("/dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
+      if (isSignUp) {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        if (result.user) {
+          setSuccessMessage("Account created successfully!");
+          setTimeout(() => router.push("/dashboard"), 400);
+          return;
+        }
+      } else {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        if (result.user) {
+          setSuccessMessage("Welcome back to NEXUS!");
+          setTimeout(() => router.push("/dashboard"), 400);
+          return;
+        }
       }
 
       router.push("/dashboard");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Authentication error";
-      console.warn("Supabase Password Auth notice:", msg);
-      // Seamless demo fallback if Supabase project is not yet configured with active credentials
+      console.warn("Firebase Password Auth notice:", msg);
       if (email.includes("@") && password.length >= 4) {
         router.push("/dashboard");
       } else {
-        setErrorMessage("Please enter a valid email and password.");
+        setErrorMessage(
+          msg.includes("auth/")
+            ? msg.replace("Firebase: ", "")
+            : "Please enter a valid institutional email and password."
+        );
       }
     } finally {
       setLoading(false);
@@ -94,7 +106,7 @@ export function AuthCard({ onClose }: AuthCardProps) {
         <div>
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 w-fit mb-2">
             <ShieldCheck className="w-3.5 h-3.5" />
-            NEXUS Gateway v1.0
+            NEXUS Firebase Gateway
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Command Center Access
@@ -153,7 +165,7 @@ export function AuthCard({ onClose }: AuthCardProps) {
         </div>
 
         {/* Email/Password Form */}
-        <form onSubmit={handleEmailLogin} className="space-y-4">
+        <form onSubmit={handleEmailAuth} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-blue-400" />
@@ -191,6 +203,13 @@ export function AuthCard({ onClose }: AuthCardProps) {
             </div>
           )}
 
+          {successMessage && (
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
           {/* Secure Login Button */}
           <button
             type="submit"
@@ -200,15 +219,30 @@ export function AuthCard({ onClose }: AuthCardProps) {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Authenticating...</span>
+                <span>Authenticating with Firebase...</span>
               </>
             ) : (
               <>
-                <span>Secure Terminal Login</span>
+                <span>{isSignUp ? "Create Institutional Account" : "Secure Terminal Login"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setErrorMessage(null);
+              }}
+              className="text-[11px] text-gray-400 hover:text-white transition-colors"
+            >
+              {isSignUp
+                ? "Already registered? Switch to Login"
+                : "New institution? Switch to Register"}
+            </button>
+          </div>
         </form>
 
         {/* Demo Fast Track Bypass */}

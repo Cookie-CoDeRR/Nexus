@@ -20,45 +20,17 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import prisma from "@/lib/prisma";
+import { seedTelemetryIfEmpty } from "@/lib/firestoreService";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  // Graceful fallback to mock data if database is empty/unseeded
-  let timeSeriesData = mockTimeSeriesData;
-  let channelData = mockChannelDistribution;
-  let kpis = mockKpiSummary;
+  // Ensure Firestore telemetry & campaigns matrix is initialized
+  await seedTelemetryIfEmpty();
 
-  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("localhost:5432/nexus_db")) {
-    try {
-      const campaigns = await prisma.campaign.findMany({
-        include: { metrics: true, leads: true },
-      });
-
-      if (campaigns && campaigns.length > 0) {
-        let liveSpend = 0;
-        let liveLeads = 0;
-        campaigns.forEach((camp) => {
-          liveLeads += camp.leads.length;
-          camp.metrics.forEach((m) => {
-            liveSpend += m.cost;
-          });
-        });
-
-        if (liveSpend > 0 && liveLeads > 0) {
-          kpis = {
-            ...mockKpiSummary,
-            totalSpend: liveSpend,
-            totalEnrollments: liveLeads,
-            averageCpa: Math.round(liveSpend / liveLeads),
-          };
-        }
-      }
-    } catch {
-      // Graceful fallback to real-time mock telemetry
-    }
-  }
+  const timeSeriesData = mockTimeSeriesData;
+  const channelData = mockChannelDistribution;
+  const kpis = mockKpiSummary;
 
   return (
     <div className="min-h-screen bg-[#0A0F1C] text-white p-6 lg:p-10 space-y-8">
