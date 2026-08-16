@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SubtleMotionBackground } from "@/components/dashboard/SubtleMotionBackground";
+import { GlobalNotebookBg } from "@/components/ui/GlobalNotebookBg";
 import { UniversalCommandBar } from "@/components/dashboard/UniversalCommandBar";
 import {
   Activity,
@@ -31,8 +31,8 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-[#0A0F1C] text-[#E5E7EB] selection:bg-blue-600 selection:text-white font-sans overflow-x-hidden flex flex-col">
-      {/* 1. Subtle Motion Background (Geometric Grid + Slow Floating Orbs) */}
-      <SubtleMotionBackground />
+      {/* 1. Global Notebook Background — Framer Motion idle-breathing orbs + floating card silhouettes */}
+      <GlobalNotebookBg />
 
       {/* 2. Sleek Glassmorphic Top Header */}
       <header className="sticky top-0 z-30 w-full bg-[#0A0F1C]/80 backdrop-blur-md border-b border-white/5 px-6 lg:px-10 py-3.5 flex items-center justify-between transition-all duration-300">
